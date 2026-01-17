@@ -94,25 +94,7 @@
      * INDICATOR
      ******************************************************************/
     function updateIndicator() {
-        const status = enabled
-            ? state === "RUNNING"
-                ? "Running"
-                : state === "PAUSED"
-                    ? "Paused"
-                    : state === "OFF"
-                        ? "Off"
-                        : "Idle"
-            : "Disabled";
-
-        const colors = {
-            "Running": "#15803D",
-            "Paused": "#FF5F15",
-            "Off": "#777",
-            "Idle": "#555",
-            "Disabled": "#999"
-        };
-
-        window.SkyskraberCore.updateIndicator(`AU2: ${status}`, colors[status] || "#555");
+        // No longer needed - Core always shows status via buttons
     }
 
     /******************************************************************
@@ -128,7 +110,6 @@
         window.SkyskraberCore.addIndicatorButton(enabled ? "Disable AU2" : "Enable AU2", () => {
             enabled = !enabled;
             localStorage.setItem("AU2_ENABLED", String(enabled));
-            updateIndicator();
         });
 
         // Add control buttons
@@ -137,7 +118,6 @@
             setOff(off);
             state = off ? "OFF" : (window.SkyskraberCore.isConnected() ? "RUNNING" : "IDLE");
             off ? stopTimer() : schedule();
-            updateIndicator();
         });
 
         window.SkyskraberCore.addIndicatorButton("Resume", () => {
@@ -163,14 +143,12 @@
         });
 
         state = isOff() ? "OFF" : "IDLE";
-        updateIndicator();
 
         // Start running when connected
         const checkConnection = setInterval(() => {
             if (enabled && window.SkyskraberCore.isConnected() && state === "IDLE" && !isOff()) {
                 state = "RUNNING";
                 schedule();
-                updateIndicator();
                 clearInterval(checkConnection);
             }
         }, 100);

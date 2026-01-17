@@ -15,8 +15,6 @@
   let wsRef = null;
   let canvas = null;
   let indicator = null;
-  let indicatorLabel = "";
-  let indicatorColor = "#555";
   let indicatorExpanded = false;
 
   const messageListeners = [];
@@ -44,6 +42,7 @@
         if (!wsRef) {
           wsRef = this;
           attachMessageListener(wsRef);
+          updateIndicatorColor();
         }
 
         // Notify all send listeners before the message is sent
@@ -78,6 +77,12 @@
   /******************************************************************
    * INDICATOR
    ******************************************************************/
+  function updateIndicatorColor() {
+    if (!indicator) return;
+    const color = wsRef ? "#15803D" : "#555";
+    indicator.style.background = color;
+  }
+
   function createIndicator() {
     indicator = document.createElement("div");
     indicator.style.cssText = `
@@ -93,7 +98,7 @@
       user-select: none;
       background: #555;
     `;
-    indicator.textContent = "Test";
+    indicator.textContent = "Core";
 
     canvas.parentElement.appendChild(indicator);
   }
@@ -114,93 +119,93 @@
   }
 
   function renderIndicator() {
+    if (!indicatorExpanded) {
+      return; // Collapsed view is handled in createIndicator
+    }
+
     if (!indicator) return;
 
-    if (indicatorExpanded) {
-      // Expanded view with buttons
-      indicator.style.cssText = `
-        position: fixed;
-        top: 5px;
-        left: 5px;
-        padding: 5px;
+    // Expanded view with buttons
+    indicator.style.cssText = `
+      position: fixed;
+      top: 5px;
+      left: 5px;
+      padding: 5px;
+      font: 600 8px Arial, sans-serif;
+      border-radius: 5px;
+      color: white;
+      z-index: 9999;
+      user-select: none;
+      background: ${wsRef ? "#15803D" : "#555"};
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      min-width: 100px;
+    `;
+
+    indicator.innerHTML = `
+      <div style="text-align: center; padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.3); cursor: pointer;" class="core-indicator-header">Core</div>
+    `;
+
+    // Add buttons
+    for (let i = 0; i < indicatorButtons.length; i++) {
+      const btn = indicatorButtons[i];
+      const buttonEl = document.createElement("button");
+      buttonEl.textContent = btn.label;
+      buttonEl.style.cssText = `
+        padding: 2px 4px;
         font: 600 8px Arial, sans-serif;
-        border-radius: 5px;
-        color: white;
-        z-index: 9999;
-        user-select: none;
-        background: ${indicatorColor};
-        display: flex;
-        flex-direction: column;
-        gap: 3px;
-        min-width: 100px;
-      `;
-
-      indicator.innerHTML = `
-        <div style="text-align: center; padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.3); cursor: pointer;" class="core-indicator-header">${indicatorLabel}</div>
-      `;
-
-      // Add buttons
-      for (let i = 0; i < indicatorButtons.length; i++) {
-        const btn = indicatorButtons[i];
-        const buttonEl = document.createElement("button");
-        buttonEl.textContent = btn.label;
-        buttonEl.style.cssText = `
-          padding: 2px 4px;
-          font: 600 8px Arial, sans-serif;
-          background: rgba(255,255,255,0.2);
-          border: 1px solid rgba(255,255,255,0.4);
-          border-radius: 3px;
-          color: white;
-          cursor: pointer;
-          transition: background 0.2s;
-          font-weight: bold;
-          font-size: 8px;
-        `;
-
-        buttonEl.addEventListener("mouseover", () => {
-          buttonEl.style.background = "rgba(255,255,255,0.3)";
-        });
-
-        buttonEl.addEventListener("mouseout", () => {
-          buttonEl.style.background = "rgba(255,255,255,0.2)";
-        });
-
-        buttonEl.addEventListener("click", (e) => {
-          e.stopPropagation();
-          btn.callback();
-        });
-
-        indicator.appendChild(buttonEl);
-      }
-
-      // Click header to collapse
-      setTimeout(() => {
-        const header = indicator.querySelector(".core-indicator-header");
-        if (header) {
-          header.addEventListener("click", (e) => {
-            e.stopPropagation();
-            indicatorExpanded = false;
-            renderIndicator();
-          });
-        }
-      }, 0);
-    } else {
-      // Collapsed view
-      indicator.style.cssText = `
-        position: fixed;
-        top: 5px;
-        left: 5px;
-        padding: 3px 5px;
-        font: 600 8px Arial, sans-serif;
-        border-radius: 5px;
+        background: rgba(255,255,255,0.2);
+        border: 1px solid rgba(255,255,255,0.4);
+        border-radius: 3px;
         color: white;
         cursor: pointer;
-        z-index: 9999;
-        user-select: none;
-        background: ${indicatorColor};
+        transition: background 0.2s;
+        font-weight: bold;
+        font-size: 8px;
       `;
-      indicator.textContent = indicatorLabel;
+
+      buttonEl.addEventListener("mouseover", () => {
+        buttonEl.style.background = "rgba(255,255,255,0.3)";
+      });
+
+      buttonEl.addEventListener("mouseout", () => {
+        buttonEl.style.background = "rgba(255,255,255,0.2)";
+      });
+
+      buttonEl.addEventListener("click", (e) => {
+        e.stopPropagation();
+        btn.callback();
+      });
+
+      indicator.appendChild(buttonEl);
     }
+
+    // Click header to collapse
+    setTimeout(() => {
+      const header = indicator.querySelector(".core-indicator-header");
+      if (header) {
+        header.addEventListener("click", (e) => {
+          e.stopPropagation();
+          indicatorExpanded = false;
+          indicator.style.cssText = `
+            position: fixed;
+            top: 5px;
+            left: 5px;
+            padding: 3px 5px;
+            font: 600 8px Arial, sans-serif;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            z-index: 9999;
+            user-select: none;
+            background: ${wsRef ? "#15803D" : "#555"};
+          `;
+          indicator.textContent = "Core";
+          setupIndicatorClickHandler();
+        });
+      }
+    }, 0);
 
     setupIndicatorClickHandler();
   }
@@ -240,22 +245,6 @@
     },
 
     /**
-     * Update the indicator color and label
-     * @param {string} label - Text to display
-     * @param {string} color - CSS color value
-     * @param {boolean} visible - Whether to show the indicator
-     */
-    updateIndicator(label, color, visible = true) {
-      if (!indicator) return;
-      indicatorLabel = label;
-      indicatorColor = color;
-      indicator.style.display = visible ? "" : "none";
-      if (!indicatorExpanded) {
-        renderIndicator();
-      }
-    },
-
-    /**
      * Add a button to the indicator control panel
      * @param {string} label - Button label
      * @param {Function} callback - Callback when button is clicked
@@ -285,7 +274,6 @@
   async function start() {
     await waitForCanvas();
     createIndicator();
-    window.SkyskraberCore.updateIndicator("Core", "#555", true);
   }
 
   start();

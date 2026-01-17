@@ -32,8 +32,7 @@
    * STATUS
    ******************************************************************/
   function updateStatus() {
-    const status = enabled ? "Enabled" : "Disabled";
-    window.SkyskraberCore.updateIndicator(`Hotkeys: ${status}`, enabled ? "#0066CC" : "#777");
+    // No longer needed - Core always shows status via buttons
   }
 
   /******************************************************************
@@ -90,13 +89,11 @@
 
     // Load enabled state
     enabled = localStorage.getItem(STORAGE_HOTKEYS_ENABLED) !== "false";
-    updateStatus();
 
     // Add enable/disable button
     window.SkyskraberCore.addIndicatorButton(enabled ? "Disable Hotkeys" : "Enable Hotkeys", () => {
       enabled = !enabled;
       localStorage.setItem(STORAGE_HOTKEYS_ENABLED, String(enabled));
-      updateStatus();
     });
 
     // Listen for outgoing messages

@@ -234,26 +234,7 @@
    * INDICATOR
    ******************************************************************/
   function updateSkovIndicator() {
-    let status;
-    if (!enabled) {
-      status = "Disabled";
-    } else if (explorationInProgress) {
-      status = "Exploring";
-    } else if (explorationComplete) {
-      status = isExecutingPath ? "Running" : "Ready";
-    } else {
-      status = "Idle";
-    }
-
-    const colors = {
-      "Exploring": "#FF9500",
-      "Running": "#15803D",
-      "Ready": "#0066CC",
-      "Idle": "#555",
-      "Disabled": "#999"
-    };
-
-    window.SkyskraberCore.updateIndicator(`Skov: ${status}`, colors[status] || "#555");
+    // No longer needed - Core always shows status via buttons
   }
 
   /******************************************************************
@@ -272,7 +253,6 @@
 
         if (msg?.room?.name && msg?.room?.fields && enabled) {
           trackRoom(msg.room.id, msg.room.name, msg.room.fields);
-          updateSkovIndicator();
         }
       }
     });
@@ -281,7 +261,6 @@
     window.SkyskraberCore.addIndicatorButton(enabled ? "Disable Skov" : "Enable Skov", () => {
       enabled = !enabled;
       localStorage.setItem(STORAGE_SKOV_ENABLED, String(enabled));
-      updateSkovIndicator();
     });
 
     // Add indicator buttons for Skov controls
@@ -291,7 +270,6 @@
           optimalPath = calculateOptimalPath();
           console.log("Optimal path:", optimalPath);
           localStorage.setItem(STORAGE_SKOV_PATH, JSON.stringify(optimalPath));
-          updateSkovIndicator();
         });
       }
     });
@@ -302,16 +280,12 @@
           optimalPath = calculateOptimalPath();
         }
         executePath();
-        updateSkovIndicator();
       }
     });
 
     window.SkyskraberCore.addIndicatorButton("Stop", () => {
       isExecutingPath = false;
-      updateSkovIndicator();
     });
-
-    updateSkovIndicator();
 
     // Auto-start if enabled in storage
     if (localStorage.getItem(STORAGE_SKOV_ENABLED) === "true") {
