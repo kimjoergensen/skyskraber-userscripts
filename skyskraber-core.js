@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Core
 // @namespace    local.skyskraber.core
-// @version      1.1.2
+// @version      1.2.0
 // @description  Core module providing websocket access and indicator management
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -62,13 +62,6 @@
      */
     addIndicatorButton(label, callback) {
       indicatorButtons.push({ label, callback });
-    },
-
-    /**
-     * Clear all indicator buttons
-     */
-    clearIndicatorButtons() {
-      indicatorButtons.length = 0;
     },
 
     /**
@@ -158,29 +151,32 @@
     `;
     indicator.textContent = "Core";
 
+    indicator.addEventListener("click", handleIndicatorClick);
     canvas.parentElement.appendChild(indicator);
   }
 
-  function setupIndicatorClickHandler() {
-    if (!indicator) return;
-
-    // Remove old listeners by cloning and replacing
-    const newIndicator = indicator.cloneNode(true);
-    indicator.parentElement.replaceChild(newIndicator, indicator);
-    indicator = newIndicator;
-
-    indicator.addEventListener("click", (e) => {
-      if (e.target.closest(".core-indicator-header")) return;
-      indicatorExpanded = !indicatorExpanded;
-      renderIndicatorExpanded();
-    });
-  }
-
-  function renderIndicatorExpanded() {
-    if (!indicator || !indicatorExpanded) {
+  function handleIndicatorClick(e) {
+    // If clicking the header in expanded view, collapse it
+    if (e.target.closest(".core-indicator-header")) {
+      collapseIndicator();
       return;
     }
-    // Expanded view with buttons
+
+    // Otherwise, toggle expansion
+    indicatorExpanded = !indicatorExpanded;
+    if (indicatorExpanded) {
+      expandIndicator();
+    } else {
+      collapseIndicator();
+    }
+  }
+
+  function expandIndicator() {
+    if (!indicator) return;
+
+    indicatorExpanded = true;
+
+    // Set expanded styling
     indicator.style.cssText = `
       position: fixed;
       top: 5px;
@@ -198,13 +194,13 @@
       min-width: 100px;
     `;
 
+    // Clear and rebuild content
     indicator.innerHTML = `
-      <div style="text-align: center; padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.3); cursor: pointer;" class="core-indicator-header">Core</div>
+      <div class="core-indicator-header" style="text-align: center; padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.3); cursor: pointer;">Core</div>
     `;
 
     // Add buttons
-    for (let i = 0; i < indicatorButtons.length; i++) {
-      const btn = indicatorButtons[i];
+    for (const btn of indicatorButtons) {
       const buttonEl = document.createElement("button");
       buttonEl.textContent = btn.label;
       buttonEl.style.cssText = `
@@ -235,34 +231,27 @@
 
       indicator.appendChild(buttonEl);
     }
+  }
 
-    // Click header to collapse
-    setTimeout(() => {
-      const header = indicator.querySelector(".core-indicator-header");
-      if (header) {
-        header.addEventListener("click", (e) => {
-          e.stopPropagation();
-          indicatorExpanded = false;
-          indicator.style.cssText = `
-            position: fixed;
-            top: 5px;
-            left: 5px;
-            padding: 3px 5px;
-            font: 600 8px Arial, sans-serif;
-            border-radius: 5px;
-            color: white;
-            cursor: pointer;
-            z-index: 9999;
-            user-select: none;
-            background: ${wsRef ? "#15803D" : "#555"};
-          `;
-          indicator.textContent = "Core";
-          setupIndicatorClickHandler();
-        });
-      }
-    }, 0);
+  function collapseIndicator() {
+    if (!indicator) return;
 
-    setupIndicatorClickHandler();
+    indicatorExpanded = false;
+
+    indicator.style.cssText = `
+      position: fixed;
+      top: 5px;
+      left: 5px;
+      padding: 3px 5px;
+      font: 600 8px Arial, sans-serif;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      z-index: 9999;
+      user-select: none;
+      background: ${wsRef ? "#15803D" : "#555"};
+    `;
+    indicator.textContent = "Core";
   }
 
   /******************************************************************
@@ -271,7 +260,6 @@
   async function start() {
     await waitForCanvas();
     createIndicator();
-    setupIndicatorClickHandler();
   }
 
   start();
