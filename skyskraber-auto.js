@@ -13,7 +13,7 @@
 (() => {
     "use strict";
 
-    console.log("[AU2] IIFE starting execution");
+    console.log("[AU2] Script loaded, version 1.1.1");
 
     const CHAT_MESSAGE = "😴";
     const CHAT_INTERVAL = 15 * 60 * 1000;
@@ -36,6 +36,7 @@
      * INITIALIZATION - Wait for Core
      ******************************************************************/
     async function waitForCore() {
+        console.log("[AU2] waitForCore called");
         while (!window.SkyskraberCore) {
             await new Promise(r => setTimeout(r, 100));
         }
@@ -45,6 +46,7 @@
      * CHAT
      ******************************************************************/
     function sendChat() {
+        console.log("[AU2] sendChat called");
         if (state !== "RUNNING" || !window.SkyskraberCore.isConnected()) return;
         au2Sending = true;
         window.SkyskraberCore.send({
@@ -55,6 +57,7 @@
     }
 
     function schedule(delay = CHAT_INTERVAL) {
+        console.log("[AU2] schedule called with delay", delay);
         if (state !== "RUNNING") return;
         clearTimeout(chatTimer);
         chatTimer = setTimeout(() => {
@@ -64,6 +67,7 @@
     }
 
     function stopTimer() {
+        console.log("[AU2] stopTimer called");
         clearTimeout(chatTimer);
         chatTimer = null;
     }
@@ -72,6 +76,7 @@
      * PAUSE / RESUME
      ******************************************************************/
     function pause() {
+        console.log("[AU2] pause called");
         if (state !== "RUNNING") return;
         state = "PAUSED";
         lastUserActionAt = Date.now();
@@ -80,6 +85,7 @@
     }
 
     function resume() {
+        console.log("[AU2] resume called");
         if (state !== "PAUSED" || isOff()) return;
         state = "RUNNING";
         schedule();
@@ -96,6 +102,7 @@
      * INDICATOR
      ******************************************************************/
     function updateIndicator() {
+        console.log("[AU2] updateIndicator called");
         // No longer needed - Core always shows status via buttons
     }
 
@@ -103,6 +110,7 @@
      * INIT
      ******************************************************************/
     async function start() {
+        console.log("[AU2] start called");
         await waitForCore();
 
         // Load enabled state from storage
@@ -156,5 +164,6 @@
         }, 100);
     }
 
+    console.log("[AU2] IIFE executing, about to call start()");
     start();
 })();

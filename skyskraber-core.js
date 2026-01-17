@@ -82,6 +82,7 @@
    * CANVAS
    ******************************************************************/
   async function waitForCanvas() {
+    console.log('[Core] waitForCanvas called');
     while (!canvas) {
       canvas = document.querySelector("canvas[tabindex='1']");
       await new Promise(r => setTimeout(r, 300));
@@ -92,6 +93,7 @@
    * WEBSOCKET HOOK
    ******************************************************************/
   (function hookWebSocketSend() {
+    console.log('[Core] hookWebSocketSend called');
     const nativeSend = WebSocket.prototype.send;
 
     WebSocket.prototype.send = function (...args) {
@@ -119,6 +121,7 @@
    * MESSAGE LISTENER
    ******************************************************************/
   function attachMessageListener(ws) {
+    console.log('[Core] attachMessageListener called');
     ws.addEventListener("message", e => {
       try {
         const msg = JSON.parse(e.data);
@@ -135,6 +138,7 @@
    * INDICATOR
    ******************************************************************/
   function updateIndicatorColor() {
+    console.log('[Core] updateIndicatorColor called');
     const indicator = getIndicator();
     if (!indicator) return;
     const color = wsRef ? "#15803D" : "#555";
@@ -142,6 +146,7 @@
   }
 
   function createIndicator() {
+    console.log('[Core] createIndicator called');
     // Only create if it hasn't been created yet in this session
     if (window.SkyskraberCoreIndicatorCreated) {
       console.log("[Core] Indicator creation skipped - already created");
@@ -186,6 +191,7 @@
   }
 
   function handleIndicatorClick(e) {
+    console.log('[Core] handleIndicatorClick called', e);
     // If clicking the header in expanded view, collapse it
     if (e.target.closest(".core-indicator-header")) {
       collapseIndicator();
@@ -202,6 +208,7 @@
   }
 
   function expandIndicator() {
+    console.log('[Core] expandIndicator called');
     const indicator = getIndicator();
     if (!indicator) return;
 
@@ -265,6 +272,7 @@
   }
 
   function collapseIndicator() {
+    console.log('[Core] collapseIndicator called');
     const indicator = getIndicator();
     if (!indicator) return;
 
@@ -290,11 +298,11 @@
    * INIT
    ******************************************************************/
   async function start() {
-    console.log("[Core] Start function called");
+    console.log('[Core] start called');
     await waitForCanvas();
     createIndicator();
   }
 
-  console.log("[Core] IIFE executing, about to call start()");
+  console.log('[Core] IIFE executing, about to call start()');
   start();
 })();
