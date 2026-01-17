@@ -22,6 +22,64 @@
   const indicatorButtons = []; // { label, callback }
 
   /******************************************************************
+   * PUBLIC API - Define early so modules can access it immediately
+   ******************************************************************/
+  window.SkyskraberCore = {
+    /**
+     * Register a listener for incoming websocket messages
+     * @param {Function} callback - Called with (msg) for each message
+     */
+    onMessage(callback) {
+      messageListeners.push(callback);
+    },
+
+    /**
+     * Register a listener for outgoing websocket messages
+     * @param {Function} callback - Called with (msg) for each sent message
+     */
+    onSend(callback) {
+      sendListeners.push(callback);
+    },
+
+    /**
+     * Send a message through the websocket
+     * @param {Object} msg - The message object to send
+     */
+    send(msg) {
+      if (!wsRef) return false;
+      try {
+        wsRef.send(JSON.stringify(msg));
+        return true;
+      } catch {
+        return false;
+      }
+    },
+
+    /**
+     * Add a button to the indicator control panel
+     * @param {string} label - Button label
+     * @param {Function} callback - Callback when button is clicked
+     */
+    addIndicatorButton(label, callback) {
+      indicatorButtons.push({ label, callback });
+    },
+
+    /**
+     * Clear all indicator buttons
+     */
+    clearIndicatorButtons() {
+      indicatorButtons.length = 0;
+    },
+
+    /**
+     * Check if websocket is connected
+     */
+    isConnected() {
+      return wsRef !== null;
+    }
+  };
+
+  /******************************************************************
    * CANVAS
    ******************************************************************/
   async function waitForCanvas() {
@@ -211,66 +269,15 @@
   }
 
   /******************************************************************
-   * PUBLIC API
-   ******************************************************************/
-  window.SkyskraberCore = {
-    /**
-     * Register a listener for incoming websocket messages
-     * @param {Function} callback - Called with (msg) for each message
-     */
-    onMessage(callback) {
-      messageListeners.push(callback);
-    },
-
-    /**
-     * Register a listener for outgoing websocket messages
-     * @param {Function} callback - Called with (msg) for each sent message
-     */
-    onSend(callback) {
-      sendListeners.push(callback);
-    },
-
-    /**
-     * Send a message through the websocket
-     * @param {Object} msg - The message object to send
-     */
-    send(msg) {
-      if (!wsRef) return false;
-      try {
-        wsRef.send(JSON.stringify(msg));
-        return true;
-      } catch {
-        return false;
-      }
-    },
-
-    /**
-     * Add a button to the indicator control panel
-     * @param {string} label - Button label
-     * @param {Function} callback - Callback when button is clicked
-     */
-    addIndicatorButton(label, callback) {
-      indicatorButtons.push({ label, callback });
-    },
-
-    /**
-     * Clear all indicator buttons
-     */
-    clearIndicatorButtons() {
-      indicatorButtons.length = 0;
-    },
-
-    /**
-     * Check if websocket is connected
-     */
-    isConnected() {
-      return wsRef !== null;
-    }
-  };
-
-  /******************************************************************
    * INIT
    ******************************************************************/
+  async function waitForCanvas() {
+    while (!canvas) {
+      canvas = document.querySelector("canvas[tabindex='1']");
+      await new Promise(r => setTimeout(r, 300));
+    }
+  }
+
   async function start() {
     await waitForCanvas();
     createIndicator();
