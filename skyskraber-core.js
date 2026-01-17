@@ -271,13 +271,6 @@
   /******************************************************************
    * INIT
    ******************************************************************/
-  async function waitForCanvas() {
-    while (!canvas) {
-      canvas = document.querySelector("canvas[tabindex='1']");
-      await new Promise(r => setTimeout(r, 300));
-    }
-  }
-
   async function start() {
     await waitForCanvas();
     createIndicator();

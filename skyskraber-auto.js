@@ -6,7 +6,7 @@
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
 // @run-at       document-start
-// @require      https://update.greasyfork.org/scripts/563000/Skyskraber%20Core.user.js
+// @require      https://update.greasyfork.org/scripts/563007/Skyskraber%20Core.user.js
 // @grant        none
 // ==/UserScript==
 
