@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber AU2
 // @namespace    local.skyskraber.au2
-// @version      1.0.0
+// @version      1.1.0
 // @description  Sends a message every 15 minutes while inactive
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*

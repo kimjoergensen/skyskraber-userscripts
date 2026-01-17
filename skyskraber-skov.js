@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Skov
 // @namespace    local.skyskraber.skov
-// @version      1.0.0
+// @version      1.1.0
 // @description  Automatic maze exploration and pathfinding for Kontamineret skov
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*

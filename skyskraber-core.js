@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Core
 // @namespace    local.skyskraber.core
-// @version      1.0.0
+// @version      1.1.0
 // @description  Core module providing websocket access and indicator management
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
