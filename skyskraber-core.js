@@ -15,9 +15,13 @@
   let wsRef = null;
   let canvas = null;
   let indicator = null;
+  let indicatorLabel = "";
+  let indicatorColor = "#555";
+  let indicatorExpanded = false;
 
   const messageListeners = [];
   const sendListeners = [];
+  const indicatorButtons = []; // { label, callback }
 
   /******************************************************************
    * CANVAS
@@ -77,19 +81,110 @@
   function createIndicator() {
     indicator = document.createElement("div");
     indicator.style.cssText = `
-            position:fixed;
-            top:5px;
-            left:5px;
-            padding:3px 5px;
-            font:600 8px Arial,sans-serif;
-            border-radius:5px;
-            color:white;
-            cursor:pointer;
-            z-index:9999;
-            user-select:none;
-        `;
+      position: fixed;
+      top: 5px;
+      left: 5px;
+      padding: 3px 5px;
+      font: 600 8px Arial, sans-serif;
+      border-radius: 5px;
+      color: white;
+      cursor: pointer;
+      z-index: 9999;
+      user-select: none;
+      background: #555;
+    `;
+    indicator.textContent = "Core";
+
+    indicator.addEventListener("click", () => {
+      indicatorExpanded = !indicatorExpanded;
+      renderIndicator();
+    });
 
     canvas.parentElement.appendChild(indicator);
+  }
+
+  function renderIndicator() {
+    if (!indicator) return;
+
+    if (indicatorExpanded) {
+      // Expanded view with buttons
+      indicator.style.cssText = `
+        position: fixed;
+        top: 5px;
+        left: 5px;
+        padding: 5px;
+        font: 600 8px Arial, sans-serif;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        z-index: 9999;
+        user-select: none;
+        background: ${indicatorColor};
+        display: flex;
+        flex-direction: column;
+        gap: 3px;
+        min-width: 100px;
+      `;
+
+      indicator.innerHTML = `
+        <div style="text-align: center; padding-bottom: 3px; border-bottom: 1px solid rgba(255,255,255,0.3); cursor: pointer;" class="core-indicator-header">${indicatorLabel}</div>
+      `;
+
+      // Add buttons
+      for (let i = 0; i < indicatorButtons.length; i++) {
+        const btn = indicatorButtons[i];
+        const buttonEl = document.createElement("button");
+        buttonEl.textContent = btn.label;
+        buttonEl.style.cssText = `
+          padding: 2px 4px;
+          font: 600 8px Arial, sans-serif;
+          background: rgba(255,255,255,0.2);
+          border: 1px solid rgba(255,255,255,0.4);
+          border-radius: 3px;
+          color: white;
+          cursor: pointer;
+          transition: background 0.2s;
+        `;
+
+        buttonEl.addEventListener("mouseover", () => {
+          buttonEl.style.background = "rgba(255,255,255,0.3)";
+        });
+
+        buttonEl.addEventListener("mouseout", () => {
+          buttonEl.style.background = "rgba(255,255,255,0.2)";
+        });
+
+        buttonEl.addEventListener("click", (e) => {
+          e.stopPropagation();
+          btn.callback();
+        });
+
+        indicator.appendChild(buttonEl);
+      }
+
+      // Click header to collapse
+      indicator.querySelector(".core-indicator-header").addEventListener("click", (e) => {
+        e.stopPropagation();
+        indicatorExpanded = false;
+        renderIndicator();
+      });
+    } else {
+      // Collapsed view
+      indicator.style.cssText = `
+        position: fixed;
+        top: 5px;
+        left: 5px;
+        padding: 3px 5px;
+        font: 600 8px Arial, sans-serif;
+        border-radius: 5px;
+        color: white;
+        cursor: pointer;
+        z-index: 9999;
+        user-select: none;
+        background: ${indicatorColor};
+      `;
+      indicator.textContent = indicatorLabel;
+    }
   }
 
   /******************************************************************
@@ -127,44 +222,35 @@
     },
 
     /**
-     * Update the indicator display
+     * Update the indicator color and label
      * @param {string} label - Text to display
      * @param {string} color - CSS color value
      * @param {boolean} visible - Whether to show the indicator
      */
     updateIndicator(label, color, visible = true) {
       if (!indicator) return;
+      indicatorLabel = label;
+      indicatorColor = color;
       indicator.style.display = visible ? "" : "none";
-      indicator.style.background = color;
-      indicator.textContent = label;
+      if (!indicatorExpanded) {
+        renderIndicator();
+      }
     },
 
     /**
-     * Set up indicator interaction
-     * @param {Function} onClick - Callback for single click
-     * @param {Function} onLongPress - Callback for long press (800ms)
+     * Add a button to the indicator control panel
+     * @param {string} label - Button label
+     * @param {Function} callback - Callback when button is clicked
      */
-    setupIndicatorInteraction(onClick, onLongPress) {
-      if (!indicator) return;
+    addIndicatorButton(label, callback) {
+      indicatorButtons.push({ label, callback });
+    },
 
-      let pressTimer;
-      let longPressFired = false;
-
-      indicator.addEventListener("mousedown", () => {
-        longPressFired = false;
-        pressTimer = setTimeout(() => {
-          if (onLongPress) onLongPress();
-          longPressFired = true;
-        }, 800);
-      });
-
-      indicator.addEventListener("mouseup", () => clearTimeout(pressTimer));
-      indicator.addEventListener("mouseleave", () => clearTimeout(pressTimer));
-
-      indicator.addEventListener("click", () => {
-        if (longPressFired) return;
-        if (onClick) onClick();
-      });
+    /**
+     * Clear all indicator buttons
+     */
+    clearIndicatorButtons() {
+      indicatorButtons.length = 0;
     },
 
     /**

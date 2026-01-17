@@ -112,23 +112,20 @@
     async function start() {
         await waitForCore();
 
-        // Set up indicator interactions
-        window.SkyskraberCore.setupIndicatorInteraction(
-            // onClick
-            () => {
-                const off = !isOff();
-                setOff(off);
-                state = off ? "OFF" : (window.SkyskraberCore.isConnected() ? "RUNNING" : "IDLE");
-                off ? stopTimer() : schedule();
-                updateIndicator();
-            },
-            // onLongPress
-            () => {
-                if (state === "PAUSED") {
-                    resume();
-                }
+        // Add indicator buttons for AU2 controls
+        window.SkyskraberCore.addIndicatorButton("Toggle", () => {
+            const off = !isOff();
+            setOff(off);
+            state = off ? "OFF" : (window.SkyskraberCore.isConnected() ? "RUNNING" : "IDLE");
+            off ? stopTimer() : schedule();
+            updateIndicator();
+        });
+
+        window.SkyskraberCore.addIndicatorButton("Resume", () => {
+            if (state === "PAUSED") {
+                resume();
             }
-        );
+        });
 
         // Listen for incoming messages
         window.SkyskraberCore.onMessage((msg) => {
