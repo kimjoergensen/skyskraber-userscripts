@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Core
 // @namespace    local.skyskraber.core
-// @version      1.2.4
+// @version      1.3.0
 // @description  Core module providing websocket access and indicator management
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -13,12 +13,12 @@
 (() => {
   "use strict";
 
-  console.log("[Core] IIFE starting execution");
-
   let wsRef = null;
   let canvas = null;
   let indicatorExpanded = false;
-  const VERSION = "1.2.4";
+  const VERSION = "1.3.0";
+
+  console.log(`[Core] Script loaded, version ${VERSION}`);
 
   // Use window reference so all script instances share the same indicator
   const getIndicator = () => window.SkyskraberCoreIndicator;
