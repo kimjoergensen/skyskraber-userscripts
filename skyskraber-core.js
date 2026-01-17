@@ -95,12 +95,22 @@
     `;
     indicator.textContent = "Core";
 
-    indicator.addEventListener("click", () => {
+    canvas.parentElement.appendChild(indicator);
+  }
+
+  function setupIndicatorClickHandler() {
+    if (!indicator) return;
+
+    // Remove old listeners by cloning and replacing
+    const newIndicator = indicator.cloneNode(true);
+    indicator.parentElement.replaceChild(newIndicator, indicator);
+    indicator = newIndicator;
+
+    indicator.addEventListener("click", (e) => {
+      if (e.target.closest(".core-indicator-header")) return; // Header handles its own click
       indicatorExpanded = !indicatorExpanded;
       renderIndicator();
     });
-
-    canvas.parentElement.appendChild(indicator);
   }
 
   function renderIndicator() {
@@ -116,7 +126,6 @@
         font: 600 8px Arial, sans-serif;
         border-radius: 5px;
         color: white;
-        cursor: pointer;
         z-index: 9999;
         user-select: none;
         background: ${indicatorColor};
@@ -144,6 +153,8 @@
           color: white;
           cursor: pointer;
           transition: background 0.2s;
+          font-weight: bold;
+          font-size: 8px;
         `;
 
         buttonEl.addEventListener("mouseover", () => {
@@ -163,11 +174,16 @@
       }
 
       // Click header to collapse
-      indicator.querySelector(".core-indicator-header").addEventListener("click", (e) => {
-        e.stopPropagation();
-        indicatorExpanded = false;
-        renderIndicator();
-      });
+      setTimeout(() => {
+        const header = indicator.querySelector(".core-indicator-header");
+        if (header) {
+          header.addEventListener("click", (e) => {
+            e.stopPropagation();
+            indicatorExpanded = false;
+            renderIndicator();
+          });
+        }
+      }, 0);
     } else {
       // Collapsed view
       indicator.style.cssText = `
@@ -185,6 +201,8 @@
       `;
       indicator.textContent = indicatorLabel;
     }
+
+    setupIndicatorClickHandler();
   }
 
   /******************************************************************
