@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Core
 // @namespace    local.skyskraber.core
-// @version      1.2.2
+// @version      1.2.3
 // @description  Core module providing websocket access and indicator management
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -14,8 +14,12 @@
 
   let wsRef = null;
   let canvas = null;
-  let indicator = null;
   let indicatorExpanded = false;
+  const VERSION = "1.2.3";
+
+  // Use window reference so all script instances share the same indicator
+  const getIndicator = () => window.SkyskraberCoreIndicator;
+  const setIndicator = (el) => { window.SkyskraberCoreIndicator = el; };
 
   const messageListeners = [];
   const sendListeners = [];
@@ -129,6 +133,7 @@
    * INDICATOR
    ******************************************************************/
   function updateIndicatorColor() {
+    const indicator = getIndicator();
     if (!indicator) return;
     const color = wsRef ? "#15803D" : "#555";
     indicator.style.background = color;
@@ -138,11 +143,11 @@
     // Only create if it doesn't already exist in the DOM
     let existing = document.querySelector("[data-skyskraber-core-indicator]");
     if (existing) {
-      indicator = existing;
+      setIndicator(existing);
       return;
     }
 
-    indicator = document.createElement("div");
+    const indicator = document.createElement("div");
     indicator.setAttribute("data-skyskraber-core-indicator", "true");
     indicator.style.cssText = `
       position: fixed;
@@ -157,10 +162,11 @@
       user-select: none;
       background: #555;
     `;
-    indicator.textContent = "Core";
+    indicator.textContent = `Core ${VERSION}`;
 
     indicator.addEventListener("click", handleIndicatorClick);
     canvas.parentElement.appendChild(indicator);
+    setIndicator(indicator);
   }
 
   function handleIndicatorClick(e) {
@@ -180,6 +186,7 @@
   }
 
   function expandIndicator() {
+    const indicator = getIndicator();
     if (!indicator) return;
 
     indicatorExpanded = true;
@@ -242,6 +249,7 @@
   }
 
   function collapseIndicator() {
+    const indicator = getIndicator();
     if (!indicator) return;
 
     indicatorExpanded = false;
@@ -259,7 +267,7 @@
       user-select: none;
       background: ${wsRef ? "#15803D" : "#555"};
     `;
-    indicator.textContent = "Core";
+    indicator.textContent = `Core ${VERSION}`;
   }
 
   /******************************************************************
