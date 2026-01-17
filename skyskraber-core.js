@@ -141,16 +141,22 @@
 
   function createIndicator() {
     // Only create if it hasn't been created yet in this session
-    if (window.SkyskraberCoreIndicatorCreated) return;
+    if (window.SkyskraberCoreIndicatorCreated) {
+      console.log("[Core] Indicator creation skipped - already created");
+      return;
+    }
+    console.log("[Core] Creating indicator for first time");
     window.SkyskraberCoreIndicatorCreated = true;
 
     // Check if it already exists in the DOM
     let existing = document.querySelector("[data-skyskraber-core-indicator]");
     if (existing) {
+      console.log("[Core] Found existing indicator in DOM");
       setIndicator(existing);
       return;
     }
 
+    console.log("[Core] Creating new indicator div");
     const indicator = document.createElement("div");
     indicator.setAttribute("data-skyskraber-core-indicator", "true");
     indicator.style.cssText = `
@@ -278,9 +284,11 @@
    * INIT
    ******************************************************************/
   async function start() {
+    console.log("[Core] Start function called");
     await waitForCanvas();
     createIndicator();
   }
 
+  console.log("[Core] IIFE executing, about to call start()");
   start();
 })();
