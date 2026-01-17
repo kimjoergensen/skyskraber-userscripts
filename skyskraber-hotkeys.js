@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Skyskraber Giga
-// @namespace    local.skyskraber.giga
+// @name         Skyskraber Hotkeys
+// @namespace    local.skyskraber.hotkeys
 // @version      1.0.0
-// @description  Arrow navigation + auto-move to items with navigation freeze
+// @description  Arrow key navigation for room exits
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
 // @run-at       document-start
@@ -13,8 +13,8 @@
 (() => {
   "use strict";
 
-  let currentRoomId = null;
-  let activeItem = null;
+  let roomExits = {};
+  let navigationFrozen = false;
 
   /******************************************************************
    * INITIALIZATION - Wait for Core
@@ -55,6 +55,23 @@
   }
 
   /******************************************************************
+   * HOTKEYS
+   ******************************************************************/
+  document.addEventListener("keydown", e => {
+    if (navigationFrozen || !window.SkyskraberCore.isConnected()) return;
+
+    const targetRoom = roomExits[e.key];
+    if (!targetRoom) return;
+
+    window.SkyskraberCore.send({
+      type: "goto",
+      data: { room: targetRoom }
+    });
+
+    e.preventDefault();
+  });
+
+  /******************************************************************
    * INIT
    ******************************************************************/
   async function start() {
@@ -64,7 +81,7 @@
     window.SkyskraberCore.onSend((msg) => {
       if (msg?.type === "goto") {
         // Manual room change always unfreezes navigation
-        activeItem = null;
+        navigationFrozen = false;
       }
     });
 
@@ -72,26 +89,11 @@
     window.SkyskraberCore.onMessage((msg) => {
       /******** ROOM ENTRY ********/
       if (msg?.room?.id) {
-        currentRoomId = msg.room.id;
-        activeItem = null;
+        navigationFrozen = false;
       }
 
-      /******** ITEM APPEARS ********/
-      if (msg?.items?.updates && !activeItem) {
-        const item = msg.items.updates.find(i => i.roomId === currentRoomId);
-        if (item) {
-          activeItem = { id: item.id, x: item.x, y: item.y };
-          moveTo(item.x, item.y);
-        }
-      }
-
-      /******** ITEM REMOVED ********/
-      if (msg?.items?.removes && activeItem) {
-        for (const removed of msg.items.removes) {
-          if (removed === `item-${activeItem.id}`) {
-            activeItem = null;
-          }
-        }
+      if (msg?.room?.fields) {
+        roomExits = extractScreenRelativeExits(msg.room.fields);
       }
     });
   }
