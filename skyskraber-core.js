@@ -107,9 +107,9 @@
 
         const msg = JSON.parse(args[0]);
         for (const listener of sendListeners) {
-          const result = listener(msg);
+          const propagate = listener(msg);
 
-          if (result === false) {
+          if (propagate === false) {
             return false;
           }
         }

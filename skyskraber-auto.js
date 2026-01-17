@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber AU2
 // @namespace    local.skyskraber.au2
-// @version      1.1.1
+// @version      1.2.0
 // @description  Sends a message every 15 minutes while inactive
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -14,7 +14,7 @@
 (() => {
     "use strict";
 
-    console.log("[AU2] Script loaded, version 1.1.1");
+    console.log("[AU2] Script loaded, version 1.2.0");
 
     const CHAT_MESSAGE = "😴";
     const CHAT_INTERVAL = 15 * 60 * 1000;
@@ -151,6 +151,8 @@
                 if (msg?.type === "move") pause();
                 if (msg?.type === "goto") pause();
             }
+
+            return true;
         });
 
         state = isOff() ? "OFF" : "IDLE";

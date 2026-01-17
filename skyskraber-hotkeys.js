@@ -120,7 +120,7 @@
 
     // Listen for outgoing messages
     window.SkyskraberCore.onSend((msg) => {
-      if (msg?.type === "goto") {
+      if (enabled && msg?.type === "goto") {
         // Manual room change always unfreezes navigation
         navigationFrozen = false;
       }
@@ -130,6 +130,8 @@
         // Prevent mood message from being sent
         return false;
       }
+
+      return true;
     });
 
     // Listen for incoming messages
