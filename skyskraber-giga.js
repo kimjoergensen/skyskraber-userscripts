@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Giga
 // @namespace    local.skyskraber.giga
-// @version      1.1.0
+// @version      1.1.1
 // @description  Auto-move to items dropped on the floor
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*

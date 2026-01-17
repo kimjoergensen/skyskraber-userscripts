@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Hotkeys
 // @namespace    local.skyskraber.hotkeys
-// @version      1.1.0
+// @version      1.1.1
 // @description  Hokteys for Skyskraber
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
