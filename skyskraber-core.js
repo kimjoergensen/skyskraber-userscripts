@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Core
 // @namespace    local.skyskraber.core
-// @version      1.1.0
+// @version      1.1.2
 // @description  Core module providing websocket access and indicator management
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -170,19 +170,16 @@
     indicator = newIndicator;
 
     indicator.addEventListener("click", (e) => {
-      if (e.target.closest(".core-indicator-header")) return; // Header handles its own click
+      if (e.target.closest(".core-indicator-header")) return;
       indicatorExpanded = !indicatorExpanded;
-      renderIndicator();
+      renderIndicatorExpanded();
     });
   }
 
-  function renderIndicator() {
-    if (!indicatorExpanded) {
-      return; // Collapsed view is handled in createIndicator
+  function renderIndicatorExpanded() {
+    if (!indicator || !indicatorExpanded) {
+      return;
     }
-
-    if (!indicator) return;
-
     // Expanded view with buttons
     indicator.style.cssText = `
       position: fixed;
@@ -274,6 +271,7 @@
   async function start() {
     await waitForCanvas();
     createIndicator();
+    setupIndicatorClickHandler();
   }
 
   start();
