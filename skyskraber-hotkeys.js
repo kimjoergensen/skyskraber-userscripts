@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Hotkeys
 // @namespace    local.skyskraber.hotkeys
-// @version      1.3.0
+// @version      1.3.1
 // @description  Hokteys for Skyskraber
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -14,7 +14,7 @@
 (() => {
   "use strict";
 
-  console.log("[Hotkeys] Script loaded, version 1.3.0");
+  console.log("[Hotkeys] Script loaded, version 1.3.1");
 
   let roomExits = {};
   let navigationFrozen = false;
@@ -172,7 +172,7 @@
         }
       }
       // Listen for pick up of blocked item
-      if (blockedItemId && msg?.type === "pick up" && msg?.data?.item === blockedItemId) {
+      if (blockedItemId && msg?.type === "pick up" && msg?.data?.item === `item-${blockedItemId}`) {
         navigationFrozen = false;
         blockedItemId = null;
         if (unblockTimeout) {
