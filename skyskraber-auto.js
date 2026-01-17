@@ -13,6 +13,8 @@
 (() => {
     "use strict";
 
+    console.log("[AU2] IIFE starting execution");
+
     const CHAT_MESSAGE = "😴";
     const CHAT_INTERVAL = 15 * 60 * 1000;
     const AUTO_RESUME_MS = 3 * 60 * 1000;

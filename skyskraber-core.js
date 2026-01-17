@@ -12,6 +12,8 @@
 (() => {
   "use strict";
 
+  console.log("[Core] IIFE starting execution");
+
   let wsRef = null;
   let canvas = null;
   let indicatorExpanded = false;
