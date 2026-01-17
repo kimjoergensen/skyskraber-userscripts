@@ -105,16 +105,17 @@
           updateIndicatorColor();
         }
 
-        // Notify all send listeners before the message is sent
-        try {
-          const msg = JSON.parse(args[0]);
-          for (const listener of sendListeners) {
-            listener(msg);
-          }
-        } catch { }
-      } catch { }
+        const msg = JSON.parse(args[0]);
+        for (const listener of sendListeners) {
+          const result = listener(msg);
 
-      return nativeSend.call(this, ...args);
+          if (result === false) {
+            return false;
+          }
+        }
+
+        return nativeSend.call(this, ...args);
+      } catch { }
     };
   })();
 
