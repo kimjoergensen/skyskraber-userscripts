@@ -93,7 +93,7 @@
       user-select: none;
       background: #555;
     `;
-    indicator.textContent = "Core";
+    indicator.textContent = "Test";
 
     canvas.parentElement.appendChild(indicator);
   }
