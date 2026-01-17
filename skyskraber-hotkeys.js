@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Hotkeys
 // @namespace    local.skyskraber.hotkeys
-// @version      1.3.1
+// @version      1.3.2
 // @description  Hokteys for Skyskraber
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -14,7 +14,7 @@
 (() => {
   "use strict";
 
-  console.log("[Hotkeys] Script loaded, version 1.3.1");
+  console.log("[Hotkeys] Script loaded, version 1.3.2");
 
   let roomExits = {};
   let navigationFrozen = false;
@@ -170,6 +170,16 @@
             console.log(`[Hotkeys] Movement blocked for item id ${blockedItemId}`);
           }
         }
+      }
+      // Unfreeze if blocked item is removed
+      if (blockedItemId && msg?.items?.removes?.includes(`item-${blockedItemId}`)) {
+        navigationFrozen = false;
+        blockedItemId = null;
+        if (unblockTimeout) {
+          clearTimeout(unblockTimeout);
+          unblockTimeout = null;
+        }
+        console.log("[Hotkeys] Movement unblocked after item removal");
       }
       // Listen for pick up of blocked item
       if (blockedItemId && msg?.type === "pick up" && msg?.data?.item === `item-${blockedItemId}`) {
