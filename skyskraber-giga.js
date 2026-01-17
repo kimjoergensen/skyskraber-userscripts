@@ -2,7 +2,7 @@
 // @name         Skyskraber Giga
 // @namespace    local.skyskraber.giga
 // @version      1.0.0
-// @description  Arrow navigation + auto-move to items with navigation freeze
+// @description  Auto-move to items dropped on the floor
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
 // @run-at       document-start
@@ -15,6 +15,9 @@
 
   let currentRoomId = null;
   let activeItem = null;
+  let enabled = true;
+
+  const STORAGE_GIGA_ENABLED = "GIGA_ENABLED";
 
   /******************************************************************
    * INITIALIZATION - Wait for Core
@@ -26,32 +29,22 @@
   }
 
   /******************************************************************
-   * DOOR → ARROW MAPPING (SCREEN-RELATIVE)
+   * MOVEMENT
    ******************************************************************/
-  function extractScreenRelativeExits(fields) {
-    const doors = fields.filter(f => f.state === "door" && typeof f.goto === "number");
-    if (!doors.length) return {};
+  function moveTo(x, y) {
+    if (!enabled || !window.SkyskraberCore.isConnected()) return;
+    window.SkyskraberCore.send({
+      type: "move",
+      data: { x, y }
+    });
+  }
 
-    const xs = fields.map(f => f.x);
-    const ys = fields.map(f => f.y);
-
-    const centerX = (Math.min(...xs) + Math.max(...xs)) / 2;
-    const centerY = (Math.min(...ys) + Math.max(...ys)) / 2;
-
-    const exits = {};
-
-    for (const door of doors) {
-      const dx = door.x - centerX;
-      const dy = door.y - centerY;
-
-      if (Math.abs(dx) > Math.abs(dy)) {
-        dx < 0 ? exits.ArrowLeft = door.goto : exits.ArrowRight = door.goto;
-      } else {
-        dy < 0 ? exits.ArrowUp = door.goto : exits.ArrowDown = door.goto;
-      }
-    }
-
-    return exits;
+  /******************************************************************
+   * STATUS
+   ******************************************************************/
+  function updateStatus() {
+    const status = enabled ? "Enabled" : "Disabled";
+    window.SkyskraberCore.updateIndicator(`Giga: ${status}`, enabled ? "#0066CC" : "#777");
   }
 
   /******************************************************************
@@ -59,6 +52,17 @@
    ******************************************************************/
   async function start() {
     await waitForCore();
+
+    // Load enabled state
+    enabled = localStorage.getItem(STORAGE_GIGA_ENABLED) !== "false";
+    updateStatus();
+
+    // Add enable/disable button
+    window.SkyskraberCore.addIndicatorButton(enabled ? "Disable Giga" : "Enable Giga", () => {
+      enabled = !enabled;
+      localStorage.setItem(STORAGE_GIGA_ENABLED, String(enabled));
+      updateStatus();
+    });
 
     // Listen for outgoing messages
     window.SkyskraberCore.onSend((msg) => {
@@ -77,7 +81,7 @@
       }
 
       /******** ITEM APPEARS ********/
-      if (msg?.items?.updates && !activeItem) {
+      if (enabled && msg?.items?.updates && !activeItem) {
         const item = msg.items.updates.find(i => i.roomId === currentRoomId);
         if (item) {
           activeItem = { id: item.id, x: item.x, y: item.y };

@@ -24,6 +24,7 @@
     let state = "IDLE"; // IDLE | RUNNING | PAUSED | OFF
     let lastUserActionAt = Date.now();
     let au2Sending = false;
+    let enabled = true;
 
     const isOff = () => localStorage.getItem(STORAGE_OFF) === "true";
     const setOff = v => localStorage.setItem(STORAGE_OFF, String(v));
@@ -93,17 +94,25 @@
      * INDICATOR
      ******************************************************************/
     function updateIndicator() {
-        if (!indicatorVisible()) {
-            window.SkyskraberCore.updateIndicator("AU2", "#555", false);
-            return;
-        }
+        const status = enabled
+            ? state === "RUNNING"
+                ? "Running"
+                : state === "PAUSED"
+                    ? "Paused"
+                    : state === "OFF"
+                        ? "Off"
+                        : "Idle"
+            : "Disabled";
+
         const colors = {
-            "RUNNING": "#15803D",
-            "PAUSED": "#FF5F15",
-            "OFF": "#777",
-            "IDLE": "#555"
+            "Running": "#15803D",
+            "Paused": "#FF5F15",
+            "Off": "#777",
+            "Idle": "#555",
+            "Disabled": "#999"
         };
-        window.SkyskraberCore.updateIndicator(`AU2: ${state}`, colors[state], true);
+
+        window.SkyskraberCore.updateIndicator(`AU2: ${status}`, colors[status] || "#555");
     }
 
     /******************************************************************
@@ -112,7 +121,17 @@
     async function start() {
         await waitForCore();
 
-        // Add indicator buttons for AU2 controls
+        // Load enabled state from storage
+        enabled = localStorage.getItem("AU2_ENABLED") !== "false";
+
+        // Add enable/disable button
+        window.SkyskraberCore.addIndicatorButton(enabled ? "Disable AU2" : "Enable AU2", () => {
+            enabled = !enabled;
+            localStorage.setItem("AU2_ENABLED", String(enabled));
+            updateIndicator();
+        });
+
+        // Add control buttons
         window.SkyskraberCore.addIndicatorButton("Toggle", () => {
             const off = !isOff();
             setOff(off);
@@ -129,14 +148,14 @@
 
         // Listen for incoming messages
         window.SkyskraberCore.onMessage((msg) => {
-            if (msg?.player?.newHour === true) {
+            if (enabled && msg?.player?.newHour === true) {
                 window.SkyskraberCore.send({ type: "hour" });
             }
         });
 
         // Listen for outgoing messages
         window.SkyskraberCore.onSend((msg) => {
-            if (!au2Sending && state === "RUNNING") {
+            if (enabled && !au2Sending && state === "RUNNING") {
                 if (msg?.type === "chat") pause();
                 if (msg?.type === "move") pause();
                 if (msg?.type === "goto") pause();
@@ -148,7 +167,7 @@
 
         // Start running when connected
         const checkConnection = setInterval(() => {
-            if (window.SkyskraberCore.isConnected() && state === "IDLE" && !isOff()) {
+            if (enabled && window.SkyskraberCore.isConnected() && state === "IDLE" && !isOff()) {
                 state = "RUNNING";
                 schedule();
                 updateIndicator();

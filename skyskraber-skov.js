@@ -25,6 +25,7 @@
   let pathIndex = 0;
   let isExecutingPath = false;
   let explorationInProgress = false;
+  let enabled = true;
 
   const STORAGE_SKOV_ENABLED = "SKOV_ENABLED";
   const STORAGE_SKOV_PATH = "SKOV_PATH";
@@ -233,23 +234,26 @@
    * INDICATOR
    ******************************************************************/
   function updateSkovIndicator() {
-    const status = explorationInProgress
-      ? "EXPLORING"
-      : explorationComplete
-        ? isExecutingPath
-          ? "RUNNING"
-          : "READY"
-        : "IDLE";
+    let status;
+    if (!enabled) {
+      status = "Disabled";
+    } else if (explorationInProgress) {
+      status = "Exploring";
+    } else if (explorationComplete) {
+      status = isExecutingPath ? "Running" : "Ready";
+    } else {
+      status = "Idle";
+    }
 
     const colors = {
-      "EXPLORING": "#FF9500",
-      "RUNNING": "#15803D",
-      "READY": "#0066CC",
-      "IDLE": "#555"
+      "Exploring": "#FF9500",
+      "Running": "#15803D",
+      "Ready": "#0066CC",
+      "Idle": "#555",
+      "Disabled": "#999"
     };
 
-    // This will be shown in the core indicator, you might want to create a separate one
-    console.log(`Skov Status: ${status}`);
+    window.SkyskraberCore.updateIndicator(`Skov: ${status}`, colors[status] || "#555");
   }
 
   /******************************************************************
@@ -258,21 +262,31 @@
   async function start() {
     await waitForCore();
 
+    // Load enabled state
+    enabled = localStorage.getItem(STORAGE_SKOV_ENABLED) !== "false";
+
     // Listen for incoming messages
     window.SkyskraberCore.onMessage((msg) => {
       if (msg?.room?.id) {
         currentRoomId = msg.room.id;
 
-        if (msg?.room?.name && msg?.room?.fields) {
+        if (msg?.room?.name && msg?.room?.fields && enabled) {
           trackRoom(msg.room.id, msg.room.name, msg.room.fields);
           updateSkovIndicator();
         }
       }
     });
 
+    // Add enable/disable button
+    window.SkyskraberCore.addIndicatorButton(enabled ? "Disable Skov" : "Enable Skov", () => {
+      enabled = !enabled;
+      localStorage.setItem(STORAGE_SKOV_ENABLED, String(enabled));
+      updateSkovIndicator();
+    });
+
     // Add indicator buttons for Skov controls
     window.SkyskraberCore.addIndicatorButton("Explore", () => {
-      if (!explorationInProgress && !explorationComplete) {
+      if (enabled && !explorationInProgress && !explorationComplete) {
         exploreMaze().then(() => {
           optimalPath = calculateOptimalPath();
           console.log("Optimal path:", optimalPath);
@@ -283,7 +297,7 @@
     });
 
     window.SkyskraberCore.addIndicatorButton("Collect", () => {
-      if (explorationComplete && !isExecutingPath) {
+      if (enabled && explorationComplete && !isExecutingPath) {
         if (optimalPath.length === 0) {
           optimalPath = calculateOptimalPath();
         }
@@ -296,6 +310,8 @@
       isExecutingPath = false;
       updateSkovIndicator();
     });
+
+    updateSkovIndicator();
 
     // Auto-start if enabled in storage
     if (localStorage.getItem(STORAGE_SKOV_ENABLED) === "true") {
