@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Hotkeys
 // @namespace    local.skyskraber.hotkeys
-// @version      1.2.0
+// @version      1.3.0
 // @description  Hokteys for Skyskraber
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -14,13 +14,15 @@
 (() => {
   "use strict";
 
-  console.log("[Hotkeys] Script loaded, version 1.2.0");
+  console.log("[Hotkeys] Script loaded, version 1.3.0");
 
   let roomExits = {};
   let navigationFrozen = false;
   let enabled = true;
   let lastMove = 0;
   let nextMove = null;
+  let blockedItemId = null;
+  let unblockTimeout = null;
 
   const STORAGE_HOTKEYS_ENABLED = "HOTKEYS_ENABLED";
   const RATE_LIMIT_MS = 400; // 0.4s between moves
@@ -125,6 +127,12 @@
       if (enabled && msg?.type === "goto") {
         // Manual room change always unfreezes navigation
         navigationFrozen = false;
+        blockedItemId = null;
+        if (unblockTimeout) {
+          clearTimeout(unblockTimeout);
+          unblockTimeout = null;
+        }
+        console.log("[Hotkeys] Movement unblocked by manual move");
       }
 
       // Block mood messages while hotkeys are enabled
@@ -145,6 +153,33 @@
 
       if (msg?.room?.fields) {
         roomExits = extractScreenRelativeExits(msg.room.fields);
+      }
+
+      // Listen for itemTypeId 232
+      if (msg?.items?.updates) {
+        for (const update of msg.items.updates) {
+          if (update.itemTypeId === 232) {
+            blockedItemId = update.id;
+            navigationFrozen = true;
+            if (unblockTimeout) clearTimeout(unblockTimeout);
+            unblockTimeout = setTimeout(() => {
+              navigationFrozen = false;
+              blockedItemId = null;
+              console.log("[Hotkeys] Movement auto-unblocked after 8s");
+            }, 8000);
+            console.log(`[Hotkeys] Movement blocked for item id ${blockedItemId}`);
+          }
+        }
+      }
+      // Listen for pick up of blocked item
+      if (blockedItemId && msg?.type === "pick up" && msg?.data?.item === blockedItemId) {
+        navigationFrozen = false;
+        blockedItemId = null;
+        if (unblockTimeout) {
+          clearTimeout(unblockTimeout);
+          unblockTimeout = null;
+        }
+        console.log("[Hotkeys] Movement unblocked after pick up");
       }
     });
   }
