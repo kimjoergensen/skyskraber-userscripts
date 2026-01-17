@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Core
 // @namespace    local.skyskraber.core
-// @version      1.2.1
+// @version      1.2.2
 // @description  Core module providing websocket access and indicator management
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -11,10 +11,6 @@
 
 (() => {
   "use strict";
-
-  // Prevent multiple script instances
-  if (window.SkyskraberCoreInitialized) return;
-  window.SkyskraberCoreInitialized = true;
 
   let wsRef = null;
   let canvas = null;
@@ -139,10 +135,15 @@
   }
 
   function createIndicator() {
-    // Only create if it doesn't already exist
-    if (indicator) return;
+    // Only create if it doesn't already exist in the DOM
+    let existing = document.querySelector("[data-skyskraber-core-indicator]");
+    if (existing) {
+      indicator = existing;
+      return;
+    }
 
     indicator = document.createElement("div");
+    indicator.setAttribute("data-skyskraber-core-indicator", "true");
     indicator.style.cssText = `
       position: fixed;
       top: 5px;
