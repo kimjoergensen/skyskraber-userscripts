@@ -177,7 +177,7 @@
     indicator.textContent = `Core ${VERSION}`;
 
     indicator.addEventListener("click", handleIndicatorClick);
-    
+
     console.log("[Core] About to append indicator to canvas.parentElement", canvas.parentElement);
     canvas.parentElement.appendChild(indicator);
     console.log("[Core] Indicator appended, setting reference");
