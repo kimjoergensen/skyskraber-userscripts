@@ -18,6 +18,7 @@
   let navigationFrozen = false;
   let enabled = true;
   let lastMove = 0;
+  let nextMove = null;
 
   const STORAGE_HOTKEYS_ENABLED = "HOTKEYS_ENABLED";
   const RATE_LIMIT_MS = 400; // 0.4s between moves
@@ -68,7 +69,8 @@
 
     const now = Date.now();
     if (now - lastMove < RATE_LIMIT_MS) {
-      // Rate limit hit
+      // Buffer the next move if rate limited
+      nextMove = e.key;
       return;
     }
     lastMove = now;
@@ -83,6 +85,23 @@
 
     e.preventDefault();
   });
+
+  // Timer to process buffered move
+  setInterval(() => {
+    if (!enabled || !nextMove) return;
+    const now = Date.now();
+    if (now - lastMove >= RATE_LIMIT_MS) {
+      const targetRoom = roomExits[nextMove];
+      if (targetRoom) {
+        window.SkyskraberCore.send({
+          type: "goto",
+          data: { room: targetRoom }
+        });
+        lastMove = now;
+      }
+      nextMove = null;
+    }
+  }, 50);
 
   /******************************************************************
    * INIT
@@ -104,6 +123,12 @@
       if (msg?.type === "goto") {
         // Manual room change always unfreezes navigation
         navigationFrozen = false;
+      }
+
+      // Block mood messages while hotkeys are enabled
+      if (enabled && msg?.type === "mood") {
+        // Prevent mood message from being sent
+        return false;
       }
     });
 
