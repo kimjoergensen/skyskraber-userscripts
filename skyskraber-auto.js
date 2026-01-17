@@ -7,6 +7,7 @@
 // @match        https://skyskraber.dk/chat*
 // @run-at       document-start
 // @require      https://update.greasyfork.org/scripts/563007/Skyskraber%20Core.user.js
+// @license      MIT
 // @grant        none
 // ==/UserScript==
 

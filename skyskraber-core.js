@@ -6,6 +6,7 @@
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
 // @run-at       document-start
+// @license      MIT
 // @grant        none
 // ==/UserScript==
 
