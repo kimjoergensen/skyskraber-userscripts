@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Skyskraber Hotkeys
 // @namespace    local.skyskraber.hotkeys
-// @version      1.3.3
+// @version      1.3.4
 // @description  Hokteys for Skyskraber
 // @match        https://www.skyskraber.dk/chat*
 // @match        https://skyskraber.dk/chat*
@@ -14,7 +14,7 @@
 (() => {
   "use strict";
 
-  console.log("[Hotkeys] Script loaded, version 1.3.3");
+  console.log("[Hotkeys] Script loaded, version 1.3.4");
 
   let roomExits = {};
   let navigationFrozen = false;
@@ -23,7 +23,6 @@
   let nextMove = null;
   let blockedItemId = null;
   let unblockTimeout = null;
-  let rateLimitMultiplier = 1;
   let currentRoomId = null;
 
   const STORAGE_HOTKEYS_ENABLED = "HOTKEYS_ENABLED";
@@ -74,7 +73,7 @@
     if (!enabled || navigationFrozen || !window.SkyskraberCore.isConnected()) return;
 
     const now = Date.now();
-    const rateLimit = BASE_RATE_LIMIT_MS * rateLimitMultiplier;
+    const rateLimit = BASE_RATE_LIMIT_MS;
     if (now - lastMove < rateLimit) {
       // Buffer the next move if rate limited
       nextMove = e.key;
@@ -97,7 +96,7 @@
   setInterval(() => {
     if (!enabled || !nextMove) return;
     const now = Date.now();
-    const rateLimit = BASE_RATE_LIMIT_MS * rateLimitMultiplier;
+    const rateLimit = BASE_RATE_LIMIT_MS;
     if (now - lastMove >= rateLimit) {
       const targetRoom = roomExits[nextMove];
       if (targetRoom) {
@@ -154,17 +153,10 @@
       if (msg?.room?.id) {
         navigationFrozen = false;
         currentRoomId = msg.room.id;
-        // Reset rate limit multiplier on room change
-        rateLimitMultiplier = 1;
       }
 
       if (msg?.room?.fields) {
         roomExits = extractScreenRelativeExits(msg.room.fields);
-      }
-
-      // Double rate-limit if clients.updates has 2 or more elements
-      if (msg?.clients?.updates && Array.isArray(msg.clients.updates) && msg.clients.updates.length >= 2) {
-        rateLimitMultiplier = 2;
       }
 
       // Listen for itemTypeId 232
