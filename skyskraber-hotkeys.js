@@ -23,9 +23,11 @@
   let nextMove = null;
   let blockedItemId = null;
   let unblockTimeout = null;
+  let rateLimitMultiplier = 1;
+  let currentRoomId = null;
 
   const STORAGE_HOTKEYS_ENABLED = "HOTKEYS_ENABLED";
-  const RATE_LIMIT_MS = 400; // 0.4s between moves
+  const BASE_RATE_LIMIT_MS = 400; // 0.4s between moves
 
   /******************************************************************
    * INITIALIZATION - Wait for Core
@@ -72,7 +74,8 @@
     if (!enabled || navigationFrozen || !window.SkyskraberCore.isConnected()) return;
 
     const now = Date.now();
-    if (now - lastMove < RATE_LIMIT_MS) {
+    const rateLimit = BASE_RATE_LIMIT_MS * rateLimitMultiplier;
+    if (now - lastMove < rateLimit) {
       // Buffer the next move if rate limited
       nextMove = e.key;
       return;
@@ -94,7 +97,8 @@
   setInterval(() => {
     if (!enabled || !nextMove) return;
     const now = Date.now();
-    if (now - lastMove >= RATE_LIMIT_MS) {
+    const rateLimit = BASE_RATE_LIMIT_MS * rateLimitMultiplier;
+    if (now - lastMove >= rateLimit) {
       const targetRoom = roomExits[nextMove];
       if (targetRoom) {
         window.SkyskraberCore.send({
@@ -149,10 +153,18 @@
       /******** ROOM ENTRY ********/
       if (msg?.room?.id) {
         navigationFrozen = false;
+        currentRoomId = msg.room.id;
+        // Reset rate limit multiplier on room change
+        rateLimitMultiplier = 1;
       }
 
       if (msg?.room?.fields) {
         roomExits = extractScreenRelativeExits(msg.room.fields);
+      }
+
+      // Double rate-limit if clients.updates has 2 or more elements
+      if (msg?.clients?.updates && Array.isArray(msg.clients.updates) && msg.clients.updates.length >= 2) {
+        rateLimitMultiplier = 2;
       }
 
       // Listen for itemTypeId 232
